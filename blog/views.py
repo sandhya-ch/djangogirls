@@ -2,6 +2,10 @@ from django.shortcuts import render, get_object_or_404,redirect
 from django.utils import timezone
 from .models import Post
 from .forms import PostForm
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login as auth_login
+from django.shortcuts import render, redirect
+
 
 # Create your views here.
 def post_list(request):
@@ -16,7 +20,7 @@ def post_new(request):
     if request.method == "POST":
         form = PostForm(request.POST)
         if form.is_valid():
-            post = form.save(commit=False)
+            post = form.save(commit=False)            
             post.author = request.user
             post.save()
             return redirect('post_detail', pk=post.pk)
@@ -51,3 +55,14 @@ def post_remove(request, pk):
     post.delete()
     return redirect('post_list')
 
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            auth_login(request, user)
+            return redirect('post_list')
+    else:
+        form = UserCreationForm()
+        print('working test')
+    return render(request, 'blog/signup.html', {'form': form})
